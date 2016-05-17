@@ -1,9 +1,4 @@
-import java.util.Properties
-
-import com.amatkivskiy.gitter.sdk.GitterOauthUtils
-import com.amatkivskiy.gitter.sdk.credentials.{GitterDeveloperCredentials, SimpleGitterCredentialsProvider}
-import com.amatkivskiy.gitter.sdk.model.response.AccessTokenResponse
-import com.amatkivskiy.gitter.sdk.sync.client.{SyncGitterApiClient, SyncGitterAuthenticationClient}
+import gitter.{Gitter, GitterCredentials, GitterSettings, GitterToken}
 
 object Main extends App {
   val oauth = GitterSettings.oauth.getOrElse(gitterPropertiesException)
@@ -43,52 +38,5 @@ object Twiter {
   private val api = TwitterFactory.getSingleton
   def tweet(content: String): Status = {
     api.updateStatus(content)
-  }
-}
-
-class GitterCredentials(oauth: GitterSettings.OAuth) {
-  GitterDeveloperCredentials.init(new SimpleGitterCredentialsProvider(oauth.key, oauth.secret, oauth.redirectUrl))
-  def getUrl(): String = {
-    GitterOauthUtils.buildOauthUrl()
-  }
-}
-
-class GitterToken(credentials: GitterCredentials, code: String) {
-  private val client = new SyncGitterAuthenticationClient.Builder().build()
-  def token(): AccessTokenResponse = {
-    client.getAccessToken(code)
-  }
-}
-
-class Gitter(credentials: GitterCredentials, accessToken: String) {
-  import scala.collection.JavaConverters._
-  private val client = new SyncGitterApiClient.Builder()
-      .withAccountToken(accessToken)
-      .build()
-  def getCurrentUserRooms() = client.getCurrentUserRooms.asScala
-  def sendMessage(roomId: String, message: String) = client.sendMessage(roomId, message)
-
-}
-
-
-object GitterSettings {
-  val conf = new Properties()
-  conf.load(getClass.getResource("gitter.properties").openStream())
-
-  val oauth = OAuth.fromProperties
-  val code = Option(conf.getProperty("oauth.code"))
-  val accessToken = Option(conf.getProperty("oauth.access_token"))
-
-  case class OAuth(key: String, secret: String, redirectUrl: String)
-  object OAuth {
-    def fromProperties: Option[OAuth] = {
-      for {
-        key <- Option(conf.getProperty("oauth.key"))
-        secret <- Option(conf.getProperty("oauth.secret"))
-        url <- Option(conf.getProperty("oauth.redirect_url"))
-      } yield {
-        OAuth(key, secret, url)
-      }
-    }
   }
 }

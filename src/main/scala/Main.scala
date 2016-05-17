@@ -6,7 +6,7 @@ object Main extends App {
   val gitterRoom = "5435ede9163965c9bc209ffb"
   args.headOption.fold(throw new RuntimeException("Not found arguments.")) { arg =>
       assert(arg.length <= 127, "Too long messages.")
-//    gitterSendMessage(arg)
+    gitterSendMessage(arg)
     Twiter.tweet(s"${arg} #MyFleetGirls")
   }
 
